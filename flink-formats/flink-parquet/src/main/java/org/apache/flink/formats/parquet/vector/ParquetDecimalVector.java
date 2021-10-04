@@ -20,11 +20,11 @@ package org.apache.flink.formats.parquet.vector;
 
 import org.apache.flink.table.data.DecimalData;
 import org.apache.flink.table.data.DecimalDataUtils;
-import org.apache.flink.table.data.vector.BytesColumnVector;
-import org.apache.flink.table.data.vector.ColumnVector;
-import org.apache.flink.table.data.vector.DecimalColumnVector;
-import org.apache.flink.table.data.vector.IntColumnVector;
-import org.apache.flink.table.data.vector.LongColumnVector;
+import org.apache.flink.table.connector.vector.BytesColumnVector;
+import org.apache.flink.table.connector.vector.ColumnVector;
+import org.apache.flink.table.connector.vector.DecimalColumnVector;
+import org.apache.flink.table.connector.vector.IntColumnVector;
+import org.apache.flink.table.connector.vector.LongColumnVector;
 
 /**
  * Parquet write decimal as int32 and int64 and binary, this class wrap the real vector to provide

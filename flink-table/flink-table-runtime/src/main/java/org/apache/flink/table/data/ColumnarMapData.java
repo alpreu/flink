@@ -17,7 +17,7 @@
 
 package org.apache.flink.table.data;
 
-import org.apache.flink.table.data.vector.ColumnVector;
+import org.apache.flink.table.connector.vector.ColumnVector;
 
 /** Columnar map to support access to vector column data. */
 public final class ColumnarMapData implements MapData {

@@ -20,6 +20,7 @@ package org.apache.flink.table.filesystem;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.io.OutputFormat;
+import org.apache.flink.table.connector.PartitionComputer;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

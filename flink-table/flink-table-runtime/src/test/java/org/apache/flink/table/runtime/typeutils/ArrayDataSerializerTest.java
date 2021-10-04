@@ -25,7 +25,7 @@ import org.apache.flink.table.data.ColumnarArrayData;
 import org.apache.flink.table.data.GenericArrayData;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.binary.BinaryArrayData;
-import org.apache.flink.table.data.vector.heap.HeapBytesVector;
+import org.apache.flink.table.connector.vector.heap.HeapBytesVector;
 import org.apache.flink.table.data.writer.BinaryArrayWriter;
 import org.apache.flink.testutils.DeeplyEqualsChecker;
 

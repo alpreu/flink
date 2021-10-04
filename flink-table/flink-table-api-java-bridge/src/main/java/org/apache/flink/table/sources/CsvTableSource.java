@@ -23,7 +23,6 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.io.CsvInputFormat;
 import org.apache.flink.api.java.io.RowCsvInputFormat;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
-import org.apache.flink.connector.file.src.FileSource;
 import org.apache.flink.core.fs.FileInputSplit;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -55,8 +54,8 @@ import static org.apache.flink.table.types.utils.TypeConversions.fromDataTypeToL
 /**
  * A {@link StreamTableSource} for simple CSV files with a (logically) unlimited number of fields.
  *
- * @deprecated The legacy CSV connector has been replaced by {@link FileSource}. It is kept only to
- *     support tests for the legacy connector stack.
+ * @deprecated The legacy CSV connector has been replaced by FileSource. It is kept only to support
+ *     tests for the legacy connector stack.
  */
 @Internal
 @Deprecated

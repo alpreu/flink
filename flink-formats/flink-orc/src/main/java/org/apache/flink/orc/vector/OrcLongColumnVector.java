@@ -25,11 +25,11 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
  * and long ColumnVector.
  */
 public class OrcLongColumnVector extends AbstractOrcColumnVector
-        implements org.apache.flink.table.data.vector.LongColumnVector,
-                org.apache.flink.table.data.vector.BooleanColumnVector,
-                org.apache.flink.table.data.vector.ByteColumnVector,
-                org.apache.flink.table.data.vector.ShortColumnVector,
-                org.apache.flink.table.data.vector.IntColumnVector {
+        implements org.apache.flink.table.connector.vector.LongColumnVector,
+                org.apache.flink.table.connector.vector.BooleanColumnVector,
+                org.apache.flink.table.connector.vector.ByteColumnVector,
+                org.apache.flink.table.connector.vector.ShortColumnVector,
+                org.apache.flink.table.connector.vector.IntColumnVector {
 
     private LongColumnVector vector;
 

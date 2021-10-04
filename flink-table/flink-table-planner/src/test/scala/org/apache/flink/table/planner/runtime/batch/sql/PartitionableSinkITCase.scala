@@ -27,11 +27,11 @@ import org.apache.flink.streaming.api.functions.sink.RichSinkFunction
 import org.apache.flink.table.api.config.ExecutionConfigOptions
 import org.apache.flink.table.api.{TableEnvironment, TableException, TableSchema, ValidationException}
 import org.apache.flink.table.catalog.{CatalogTableImpl, ObjectPath}
+import org.apache.flink.table.connector.CompactionOptions
 import org.apache.flink.table.descriptors.ConnectorDescriptorValidator.CONNECTOR_TYPE
 import org.apache.flink.table.descriptors.DescriptorProperties
 import org.apache.flink.table.descriptors.Schema.SCHEMA
 import org.apache.flink.table.factories.TableSinkFactory
-import org.apache.flink.table.filesystem.FileSystemConnectorOptions
 import org.apache.flink.table.planner.runtime.batch.sql.PartitionableSinkITCase.{type4, type_int_string, _}
 import org.apache.flink.table.planner.runtime.utils.BatchTestBase
 import org.apache.flink.table.planner.runtime.utils.BatchTestBase.row
@@ -311,7 +311,7 @@ object PartitionableSinkITCase {
       partitionColumns: Array[String]): Unit = {
     val properties = new DescriptorProperties()
     properties.putString("supports-grouping", grouping.toString)
-    properties.putString(FileSystemConnectorOptions.SINK_SHUFFLE_BY_PARTITION.key(), "true")
+    properties.putString(CompactionOptions.SINK_SHUFFLE_BY_PARTITION.key(), "true")
     properties.putString(CONNECTOR_TYPE, "TestPartitionableSink")
     partitionColumns.zipWithIndex.foreach { case (part, i) =>
       properties.putString("partition-column." + i, part)

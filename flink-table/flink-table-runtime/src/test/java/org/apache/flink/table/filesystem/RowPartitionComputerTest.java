@@ -18,6 +18,7 @@
 
 package org.apache.flink.table.filesystem;
 
+import org.apache.flink.table.connector.RowPartitionComputer;
 import org.apache.flink.types.Row;
 
 import org.junit.Assert;

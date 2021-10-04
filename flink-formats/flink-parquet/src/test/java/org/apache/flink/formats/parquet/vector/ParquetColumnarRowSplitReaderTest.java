@@ -19,9 +19,9 @@
 package org.apache.flink.formats.parquet.vector;
 
 import org.apache.flink.core.fs.Path;
-import org.apache.flink.table.data.ColumnarRowData;
+import org.apache.flink.table.connector.ColumnarRowData;
 import org.apache.flink.table.data.DecimalData;
-import org.apache.flink.table.data.vector.VectorizedColumnBatch;
+import org.apache.flink.table.connector.VectorizedColumnBatch;
 import org.apache.flink.table.runtime.functions.SqlDateTimeUtils;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.BigIntType;

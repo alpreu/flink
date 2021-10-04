@@ -30,7 +30,7 @@ import org.apache.flink.table.types.logical.RowType
 import org.apache.calcite.plan.RelOptRule
 import org.apache.calcite.rel.convert.ConverterRule
 import org.apache.calcite.rel.{RelCollationTraitDef, RelCollations, RelNode}
-import org.apache.flink.table.filesystem.FileSystemConnectorOptions
+import org.apache.flink.table.connector.CompactionOptions
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -71,7 +71,7 @@ class BatchPhysicalSinkRule extends ConverterRule(
             val shuffleEnable = sink
                 .catalogTable
                 .getOptions
-                .get(FileSystemConnectorOptions.SINK_SHUFFLE_BY_PARTITION.key())
+                .get(CompactionOptions.SINK_SHUFFLE_BY_PARTITION.key())
 
             if (shuffleEnable != null && shuffleEnable.toBoolean) {
               requiredTraitSet = requiredTraitSet.plus(

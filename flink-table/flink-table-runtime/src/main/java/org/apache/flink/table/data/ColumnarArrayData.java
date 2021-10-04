@@ -18,20 +18,20 @@
 package org.apache.flink.table.data;
 
 import org.apache.flink.table.data.binary.TypedSetters;
-import org.apache.flink.table.data.vector.ArrayColumnVector;
-import org.apache.flink.table.data.vector.BooleanColumnVector;
-import org.apache.flink.table.data.vector.ByteColumnVector;
-import org.apache.flink.table.data.vector.BytesColumnVector;
-import org.apache.flink.table.data.vector.ColumnVector;
-import org.apache.flink.table.data.vector.DecimalColumnVector;
-import org.apache.flink.table.data.vector.DoubleColumnVector;
-import org.apache.flink.table.data.vector.FloatColumnVector;
-import org.apache.flink.table.data.vector.IntColumnVector;
-import org.apache.flink.table.data.vector.LongColumnVector;
-import org.apache.flink.table.data.vector.MapColumnVector;
-import org.apache.flink.table.data.vector.RowColumnVector;
-import org.apache.flink.table.data.vector.ShortColumnVector;
-import org.apache.flink.table.data.vector.TimestampColumnVector;
+import org.apache.flink.table.connector.vector.ArrayColumnVector;
+import org.apache.flink.table.connector.vector.BooleanColumnVector;
+import org.apache.flink.table.connector.vector.ByteColumnVector;
+import org.apache.flink.table.connector.vector.BytesColumnVector;
+import org.apache.flink.table.connector.vector.ColumnVector;
+import org.apache.flink.table.connector.vector.DecimalColumnVector;
+import org.apache.flink.table.connector.vector.DoubleColumnVector;
+import org.apache.flink.table.connector.vector.FloatColumnVector;
+import org.apache.flink.table.connector.vector.IntColumnVector;
+import org.apache.flink.table.connector.vector.LongColumnVector;
+import org.apache.flink.table.connector.vector.MapColumnVector;
+import org.apache.flink.table.connector.vector.RowColumnVector;
+import org.apache.flink.table.connector.vector.ShortColumnVector;
+import org.apache.flink.table.connector.vector.TimestampColumnVector;
 
 import java.util.Arrays;
 

@@ -19,7 +19,6 @@
 package org.apache.flink.table.sources;
 
 import org.apache.flink.annotation.Internal;
-import org.apache.flink.connector.file.src.FileSource;
 import org.apache.flink.table.api.TableException;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.descriptors.DescriptorProperties;
@@ -61,8 +60,8 @@ import static org.apache.flink.table.descriptors.Schema.SCHEMA;
 /**
  * Factory base for creating configured instances of {@link CsvTableSource}.
  *
- * @deprecated The legacy CSV connector has been replaced by {@link FileSource}. It is kept only to
- *     support tests for the legacy connector stack.
+ * @deprecated The legacy CSV connector has been replaced by FileSource. It is kept only to support
+ *     tests for the legacy connector stack.
  */
 @Internal
 @Deprecated

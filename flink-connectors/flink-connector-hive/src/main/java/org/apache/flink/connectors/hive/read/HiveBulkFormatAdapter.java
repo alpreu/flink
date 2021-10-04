@@ -30,11 +30,11 @@ import org.apache.flink.formats.parquet.ParquetColumnarRowInputFormat;
 import org.apache.flink.orc.OrcColumnarRowFileInputFormat;
 import org.apache.flink.orc.nohive.OrcNoHiveColumnarRowInputFormat;
 import org.apache.flink.orc.shim.OrcShim;
+import org.apache.flink.streaming.connectors.file.table.PartitionFieldExtractor;
 import org.apache.flink.table.catalog.hive.client.HiveShim;
 import org.apache.flink.table.catalog.hive.client.HiveShimLoader;
 import org.apache.flink.table.catalog.hive.util.HiveTypeUtil;
 import org.apache.flink.table.data.RowData;
-import org.apache.flink.table.filesystem.PartitionFieldExtractor;
 import org.apache.flink.table.runtime.typeutils.InternalTypeInfo;
 import org.apache.flink.table.runtime.typeutils.RowDataSerializer;
 import org.apache.flink.table.types.DataType;
@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.connector.file.src.util.CheckpointedPosition.NO_OFFSET;
-import static org.apache.flink.table.data.vector.VectorizedColumnBatch.DEFAULT_SIZE;
+import static org.apache.flink.table.connector.VectorizedColumnBatch.DEFAULT_SIZE;
 
 /**
  * A BulkFormat implementation for HiveSource. This implementation delegates reading to other

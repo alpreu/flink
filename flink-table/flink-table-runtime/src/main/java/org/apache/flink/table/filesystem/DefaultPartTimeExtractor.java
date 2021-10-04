@@ -40,10 +40,7 @@ import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 import static java.time.temporal.ChronoField.YEAR;
 
-/**
- * Default {@link PartitionTimeExtractor}. See {@link
- * FileSystemConnectorOptions#PARTITION_TIME_EXTRACTOR_TIMESTAMP_PATTERN}.
- */
+/** Default {@link PartitionTimeExtractor}. */
 public class DefaultPartTimeExtractor implements PartitionTimeExtractor {
 
     private static final DateTimeFormatter TIMESTAMP_FORMATTER =

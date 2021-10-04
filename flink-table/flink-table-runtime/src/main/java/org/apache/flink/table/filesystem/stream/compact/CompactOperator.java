@@ -26,7 +26,6 @@ import org.apache.flink.api.common.typeutils.base.LongSerializer;
 import org.apache.flink.api.common.typeutils.base.MapSerializer;
 import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.connector.file.src.reader.BulkFormat;
 import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.Path;
@@ -60,7 +59,7 @@ import java.util.TreeMap;
  * Receives compaction units to do compaction. Send partition commit information after compaction
  * finished.
  *
- * <p>Use {@link BulkFormat} to read and use {@link BucketWriter} to write.
+ * <p>Use BulkFormat to read and use {@link BucketWriter} to write.
  *
  * <p>STATE: This operator stores expired files in state, after the checkpoint completes
  * successfully, We can ensure that these files will not be used again and they can be deleted from

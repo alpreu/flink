@@ -25,8 +25,8 @@ import org.apache.orc.storage.ql.exec.vector.DoubleColumnVector;
  * ColumnVector.
  */
 public class OrcNoHiveDoubleVector extends AbstractOrcNoHiveVector
-        implements org.apache.flink.table.data.vector.DoubleColumnVector,
-                org.apache.flink.table.data.vector.FloatColumnVector {
+        implements org.apache.flink.table.connector.vector.DoubleColumnVector,
+                org.apache.flink.table.connector.vector.FloatColumnVector {
 
     private DoubleColumnVector vector;
 

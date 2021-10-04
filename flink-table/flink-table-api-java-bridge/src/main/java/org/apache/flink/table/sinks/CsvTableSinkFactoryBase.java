@@ -19,7 +19,6 @@
 package org.apache.flink.table.sinks;
 
 import org.apache.flink.annotation.Internal;
-import org.apache.flink.connector.file.sink.FileSink;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.table.api.TableException;
 import org.apache.flink.table.api.TableSchema;
@@ -58,8 +57,8 @@ import static org.apache.flink.table.sources.CsvTableSourceFactoryBase.getFieldL
 /**
  * Factory base for creating configured instances of {@link CsvTableSink}.
  *
- * @deprecated The legacy CSV connector has been replaced by {@link FileSink}. It is kept only to
- *     support tests for the legacy connector stack.
+ * @deprecated The legacy CSV connector has been replaced by FileSink. It is kept only to support
+ *     tests for the legacy connector stack.
  */
 @Internal
 @Deprecated

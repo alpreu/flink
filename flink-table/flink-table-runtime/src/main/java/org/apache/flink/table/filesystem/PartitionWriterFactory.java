@@ -19,6 +19,7 @@
 package org.apache.flink.table.filesystem;
 
 import org.apache.flink.annotation.Internal;
+import org.apache.flink.table.connector.PartitionComputer;
 import org.apache.flink.table.filesystem.PartitionWriter.Context;
 
 import java.io.Serializable;

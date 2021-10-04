@@ -30,7 +30,7 @@ import org.apache.flink.table.api.internal.TableImpl;
 import org.apache.flink.table.data.ArrayData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.util.DataFormatConverters;
-import org.apache.flink.table.data.vector.ColumnVector;
+import org.apache.flink.table.connector.vector.ColumnVector;
 import org.apache.flink.table.operations.OutputConversionModifyOperation;
 import org.apache.flink.table.runtime.arrow.sources.ArrowTableSource;
 import org.apache.flink.table.runtime.arrow.vectors.ArrowArrayColumnVector;

@@ -19,10 +19,10 @@
 package org.apache.flink.table.runtime.arrow.vectors;
 
 import org.apache.flink.annotation.Internal;
-import org.apache.flink.table.data.ColumnarRowData;
-import org.apache.flink.table.data.vector.ColumnVector;
-import org.apache.flink.table.data.vector.RowColumnVector;
-import org.apache.flink.table.data.vector.VectorizedColumnBatch;
+import org.apache.flink.table.connector.ColumnarRowData;
+import org.apache.flink.table.connector.vector.ColumnVector;
+import org.apache.flink.table.connector.vector.RowColumnVector;
+import org.apache.flink.table.connector.VectorizedColumnBatch;
 import org.apache.flink.util.Preconditions;
 
 import org.apache.arrow.vector.complex.StructVector;

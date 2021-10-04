@@ -26,6 +26,7 @@ import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.streaming.api.functions.sink.filesystem.OutputFileConfig;
 import org.apache.flink.table.api.TableException;
+import org.apache.flink.table.connector.PartitionComputer;
 
 import java.io.IOException;
 import java.io.Serializable;

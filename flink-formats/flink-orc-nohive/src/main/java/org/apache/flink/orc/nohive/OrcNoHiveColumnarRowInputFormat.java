@@ -23,9 +23,9 @@ import org.apache.flink.orc.OrcColumnarRowFileInputFormat;
 import org.apache.flink.orc.OrcFilters;
 import org.apache.flink.orc.nohive.shim.OrcNoHiveShim;
 import org.apache.flink.orc.vector.ColumnBatchFactory;
-import org.apache.flink.table.data.vector.ColumnVector;
-import org.apache.flink.table.data.vector.VectorizedColumnBatch;
-import org.apache.flink.table.filesystem.PartitionFieldExtractor;
+import org.apache.flink.streaming.connectors.file.table.PartitionFieldExtractor;
+import org.apache.flink.table.connector.VectorizedColumnBatch;
+import org.apache.flink.table.connector.vector.ColumnVector;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.RowType;
 

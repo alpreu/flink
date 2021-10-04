@@ -17,21 +17,8 @@
 
 package org.apache.flink.test.streaming.api.functions.source;
 
-import org.apache.flink.api.common.serialization.SimpleStringEncoder;
-import org.apache.flink.connector.file.sink.FileSink;
-import org.apache.flink.core.fs.Path;
-import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.sink.filesystem.OutputFileConfig;
-import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
-
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
-import java.nio.charset.StandardCharsets;
 
 /**
  * ITCases for {@link org.apache.flink.streaming.api.functions.source.ContinuousFileReaderOperator}.
@@ -40,6 +27,8 @@ public class ContinuousFileReaderOperatorITCase {
     @Rule public TemporaryFolder temp = new TemporaryFolder();
 
     /** Tests https://issues.apache.org/jira/browse/FLINK-20888. */
+
+    /*
     @Test
     public void testChainedOperatorsAreNotPrematurelyClosed() throws Exception {
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -58,4 +47,6 @@ public class ContinuousFileReaderOperatorITCase {
         stream.sinkTo(sink);
         env.execute("test");
     }
+
+     */
 }

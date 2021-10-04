@@ -27,7 +27,7 @@ import org.apache.flink.table.sinks.PartitionableTableSink
 import org.apache.calcite.plan.RelOptRule
 import org.apache.calcite.rel.RelNode
 import org.apache.calcite.rel.convert.ConverterRule
-import org.apache.flink.table.filesystem.FileSystemConnectorOptions
+import org.apache.flink.table.connector.CompactionOptions
 
 import scala.collection.JavaConversions._
 
@@ -55,7 +55,7 @@ class StreamPhysicalLegacySinkRule extends ConverterRule(
             val shuffleEnable = sink
                 .catalogTable
                 .getOptions
-                .get(FileSystemConnectorOptions.SINK_SHUFFLE_BY_PARTITION.key())
+                .get(CompactionOptions.SINK_SHUFFLE_BY_PARTITION.key())
 
             if (shuffleEnable != null && shuffleEnable.toBoolean) {
               requiredTraitSet = requiredTraitSet.plus(

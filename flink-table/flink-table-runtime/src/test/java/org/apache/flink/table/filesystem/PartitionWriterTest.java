@@ -22,6 +22,7 @@ import org.apache.flink.api.common.io.OutputFormat;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.Path;
+import org.apache.flink.table.connector.PartitionComputer;
 import org.apache.flink.table.filesystem.PartitionWriter.Context;
 import org.apache.flink.table.utils.LegacyRowResource;
 import org.apache.flink.types.Row;

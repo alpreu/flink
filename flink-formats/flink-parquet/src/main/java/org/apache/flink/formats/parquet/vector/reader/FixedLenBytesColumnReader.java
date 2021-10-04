@@ -18,10 +18,10 @@
 package org.apache.flink.formats.parquet.vector.reader;
 
 import org.apache.flink.table.data.DecimalDataUtils;
-import org.apache.flink.table.data.vector.writable.WritableBytesVector;
-import org.apache.flink.table.data.vector.writable.WritableColumnVector;
-import org.apache.flink.table.data.vector.writable.WritableIntVector;
-import org.apache.flink.table.data.vector.writable.WritableLongVector;
+import org.apache.flink.table.connector.vector.writable.WritableBytesVector;
+import org.apache.flink.table.connector.vector.writable.WritableColumnVector;
+import org.apache.flink.table.connector.vector.writable.WritableIntVector;
+import org.apache.flink.table.connector.vector.writable.WritableLongVector;
 
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReader;
