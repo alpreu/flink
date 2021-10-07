@@ -21,6 +21,7 @@ package org.apache.flink.streaming.connectors.elasticsearch.table;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.ValidationException;
+import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.DistinctType;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.LogicalTypeFamily;
@@ -38,6 +39,7 @@ import static org.apache.flink.table.types.logical.utils.LogicalTypeChecks.hasRo
 class ElasticsearchValidationUtils {
 
     private static final Set<LogicalTypeRoot> ILLEGAL_PRIMARY_KEY_TYPES = new LinkedHashSet<>();
+    private static final Set<LogicalTypeRoot> ALLOWED_PRIMARY_KEY_TYPES = new LinkedHashSet<>();
 
     static {
         ILLEGAL_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.ARRAY);
@@ -48,6 +50,26 @@ class ElasticsearchValidationUtils {
         ILLEGAL_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.RAW);
         ILLEGAL_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.BINARY);
         ILLEGAL_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.VARBINARY);
+
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.CHAR);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.VARCHAR);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.BOOLEAN);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.DECIMAL);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.TINYINT);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.SMALLINT);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.INTEGER);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.BIGINT);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.FLOAT);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.DOUBLE);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.DATE);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.TIME_WITHOUT_TIME_ZONE);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.TIMESTAMP_WITHOUT_TIME_ZONE);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.TIMESTAMP_WITH_TIME_ZONE);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.TIMESTAMP_WITH_LOCAL_TIME_ZONE);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.INTERVAL_YEAR_MONTH);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.INTERVAL_DAY_TIME);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.DISTINCT_TYPE);
+        ALLOWED_PRIMARY_KEY_TYPES.add(LogicalTypeRoot.STRUCTURED_TYPE);
     }
 
     /**
@@ -58,6 +80,7 @@ class ElasticsearchValidationUtils {
      * The illegal types are mostly {@link LogicalTypeFamily#COLLECTION} types and {@link
      * LogicalTypeRoot#RAW} type.
      */
+    @Deprecated
     public static void validatePrimaryKey(TableSchema schema) {
         schema.getPrimaryKey()
                 .ifPresent(
@@ -91,6 +114,39 @@ class ElasticsearchValidationUtils {
                                                 illegalTypes, ILLEGAL_PRIMARY_KEY_TYPES));
                             }
                         });
+    }
+
+    /**
+     * Checks that the table does not have a primary key defined on illegal types. In Elasticsearch
+     * the primary key is used to calculate the Elasticsearch document id, which is a string of up
+     * to 512 bytes. It cannot have whitespaces. As of now it is calculated by concatenating the
+     * fields. Certain types do not have a good string representation to be used in this scenario.
+     * The illegal types are mostly {@link LogicalTypeFamily#COLLECTION} types and {@link
+     * LogicalTypeRoot#RAW} type.
+     */
+    public static void validatePrimaryKey(DataType primaryKeyDataType) {
+        List<DataType> fieldDataTypes = DataType.getFieldDataTypes(primaryKeyDataType);
+        List<LogicalTypeRoot> illegalTypes =
+                fieldDataTypes.stream()
+                        .map(DataType::getLogicalType)
+                        .map(
+                                logicalType -> {
+                                    if (hasRoot(logicalType, LogicalTypeRoot.DISTINCT_TYPE)) {
+                                        return ((DistinctType) logicalType)
+                                                .getSourceType()
+                                                .getTypeRoot();
+                                    } else {
+                                        return logicalType.getTypeRoot();
+                                    }
+                                })
+                        .filter(t -> !ALLOWED_PRIMARY_KEY_TYPES.contains(t))
+                        .collect(Collectors.toList());
+        if (!illegalTypes.isEmpty()) {
+            throw new ValidationException(
+                    String.format(
+                            "The table has a primary key on columns of illegal types: %s.",
+                            illegalTypes));
+        }
     }
 
     private ElasticsearchValidationUtils() {}
