@@ -16,22 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.elasticsearch.table;
+package org.apache.flink.connector.elasticsearch.sink;
 
-import org.apache.flink.annotation.Internal;
-import org.apache.flink.configuration.ReadableConfig;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.client.RestHighLevelClient;
 
-import static org.apache.flink.streaming.connectors.elasticsearch.table.Elasticsearch6ConnectorOptions.DOCUMENT_TYPE_OPTION;
+import java.io.Serializable;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
-/** Elasticsearch 6 specific configuration. */
-@Internal
-final class Elasticsearch6Configuration extends ElasticsearchConfiguration {
-
-    Elasticsearch6Configuration(ReadableConfig config) {
-        super(config);
-    }
-
-    public String getDocumentType() {
-        return config.get(DOCUMENT_TYPE_OPTION);
-    }
-}
+public interface BulkRequestConsumerFactory
+        extends Function<
+                        RestHighLevelClient, BiConsumer<BulkRequest, ActionListener<BulkResponse>>>,
+                Serializable {}

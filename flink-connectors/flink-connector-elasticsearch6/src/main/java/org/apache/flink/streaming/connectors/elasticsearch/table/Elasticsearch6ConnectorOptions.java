@@ -18,20 +18,19 @@
 
 package org.apache.flink.streaming.connectors.elasticsearch.table;
 
-import org.apache.flink.annotation.Internal;
-import org.apache.flink.configuration.ReadableConfig;
+import org.apache.flink.annotation.PublicEvolving;
+import org.apache.flink.configuration.ConfigOption;
+import org.apache.flink.configuration.ConfigOptions;
 
-import static org.apache.flink.streaming.connectors.elasticsearch.table.Elasticsearch6ConnectorOptions.DOCUMENT_TYPE_OPTION;
+/** Options specific for the Elasticsearch 6 connector. */
+@PublicEvolving
+public final class Elasticsearch6ConnectorOptions extends ElasticsearchConnectorOptions {
 
-/** Elasticsearch 6 specific configuration. */
-@Internal
-final class Elasticsearch6Configuration extends ElasticsearchConfiguration {
+    private Elasticsearch6ConnectorOptions() {}
 
-    Elasticsearch6Configuration(ReadableConfig config) {
-        super(config);
-    }
-
-    public String getDocumentType() {
-        return config.get(DOCUMENT_TYPE_OPTION);
-    }
+    public static final ConfigOption<String> DOCUMENT_TYPE_OPTION =
+            ConfigOptions.key("document-type")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("Elasticsearch document type.");
 }

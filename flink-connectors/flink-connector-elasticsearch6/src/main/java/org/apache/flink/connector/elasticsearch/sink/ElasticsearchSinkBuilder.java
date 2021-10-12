@@ -16,22 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.elasticsearch.table;
+package org.apache.flink.connector.elasticsearch.sink;
 
-import org.apache.flink.annotation.Internal;
-import org.apache.flink.configuration.ReadableConfig;
+public class ElasticsearchSinkBuilder<IN> extends ElasticsearchSinkBuilderBase<IN> {
 
-import static org.apache.flink.streaming.connectors.elasticsearch.table.Elasticsearch6ConnectorOptions.DOCUMENT_TYPE_OPTION;
+    public ElasticsearchSinkBuilder() {}
 
-/** Elasticsearch 6 specific configuration. */
-@Internal
-final class Elasticsearch6Configuration extends ElasticsearchConfiguration {
-
-    Elasticsearch6Configuration(ReadableConfig config) {
-        super(config);
-    }
-
-    public String getDocumentType() {
-        return config.get(DOCUMENT_TYPE_OPTION);
+    @Override
+    public BulkRequestConsumerFactory getBulkRequestConsumer() {
+        return client -> client::bulkAsync;
     }
 }

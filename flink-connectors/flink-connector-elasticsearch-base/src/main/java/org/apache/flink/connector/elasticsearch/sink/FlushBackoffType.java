@@ -16,22 +16,23 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.elasticsearch.table;
+package org.apache.flink.connector.elasticsearch.sink;
 
-import org.apache.flink.annotation.Internal;
-import org.apache.flink.configuration.ReadableConfig;
+import org.apache.flink.annotation.PublicEvolving;
 
-import static org.apache.flink.streaming.connectors.elasticsearch.table.Elasticsearch6ConnectorOptions.DOCUMENT_TYPE_OPTION;
-
-/** Elasticsearch 6 specific configuration. */
-@Internal
-final class Elasticsearch6Configuration extends ElasticsearchConfiguration {
-
-    Elasticsearch6Configuration(ReadableConfig config) {
-        super(config);
-    }
-
-    public String getDocumentType() {
-        return config.get(DOCUMENT_TYPE_OPTION);
-    }
+/**
+ * Used to control whether the sink should retry failed requests at all or with which kind back off
+ * strategy.
+ */
+@PublicEvolving
+public enum FlushBackoffType {
+    /** After every failure, it waits a configured time until the retries are exhausted. */
+    CONSTANT,
+    /**
+     * After every failure, it waits initially the configured time and increases the waiting time
+     * exponentially until the retries are exhausted.
+     */
+    EXPONENTIAL,
+    /** The failure is not retried. */
+    NONE,
 }

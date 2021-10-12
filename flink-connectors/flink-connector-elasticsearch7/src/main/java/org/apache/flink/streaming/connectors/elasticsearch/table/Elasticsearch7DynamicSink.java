@@ -23,13 +23,11 @@ import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.connector.elasticsearch.sink.ElasticsearchSink;
 import org.apache.flink.connector.elasticsearch.sink.ElasticsearchSinkBuilder;
 import org.apache.flink.connector.elasticsearch.sink.FlushBackoffType;
-import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.format.EncodingFormat;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
 import org.apache.flink.table.connector.sink.SinkProvider;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
-import org.apache.flink.types.RowKind;
 import org.apache.flink.util.StringUtils;
 
 import org.apache.http.HttpHost;
@@ -38,40 +36,19 @@ import org.elasticsearch.common.xcontent.XContentType;
 import java.util.List;
 import java.util.Objects;
 
-import static org.apache.flink.util.Preconditions.checkNotNull;
-
 /**
  * A {@link DynamicTableSink} that describes how to create a {@link ElasticsearchSink} from a
  * logical description.
  */
 @Internal
-final class Elasticsearch7DynamicSink implements DynamicTableSink {
-
-    private final EncodingFormat<SerializationSchema<RowData>> format;
-    private final DataType physicalRowDataType;
-    private final List<LogicalTypeWithIndex> primaryKeyLogicalTypesWithIndex;
-    private final Elasticsearch7Configuration config;
+final class Elasticsearch7DynamicSink extends ElasticsearchDynamicSinkBase {
 
     Elasticsearch7DynamicSink(
             EncodingFormat<SerializationSchema<RowData>> format,
-            Elasticsearch7Configuration config,
+            ElasticsearchConfiguration config,
             List<LogicalTypeWithIndex> primaryKeyLogicalTypesWithIndex,
             DataType physicalRowDataType) {
-        this.format = checkNotNull(format);
-        this.physicalRowDataType = checkNotNull(physicalRowDataType);
-        this.primaryKeyLogicalTypesWithIndex = checkNotNull(primaryKeyLogicalTypesWithIndex);
-        this.config = checkNotNull(config);
-    }
-
-    @Override
-    public ChangelogMode getChangelogMode(ChangelogMode requestedMode) {
-        ChangelogMode.Builder builder = ChangelogMode.newBuilder();
-        for (RowKind kind : requestedMode.getContainedKinds()) {
-            if (kind != RowKind.UPDATE_BEFORE) {
-                builder.addContainedKind(kind);
-            }
-        }
-        return builder.build();
+        super(format, config, primaryKeyLogicalTypesWithIndex, physicalRowDataType);
     }
 
     @Override
@@ -81,21 +58,14 @@ final class Elasticsearch7DynamicSink implements DynamicTableSink {
 
         final RowElasticsearchEmitter rowElasticsearchEmitter =
                 new RowElasticsearchEmitter(
-                        IndexGeneratorFactory.createIndexGenerator(
-                                config.getIndex(),
-                                DataType.getFieldNames(physicalRowDataType),
-                                DataType.getFieldDataTypes(physicalRowDataType)),
-                        format,
-                        XContentType.JSON,
-                        KeyExtractor.createKeyExtractor(
-                                primaryKeyLogicalTypesWithIndex, config.getKeyDelimiter()));
+                        createIndexGenerator(), format, XContentType.JSON, createKeyExtractor());
 
-        final ElasticsearchSinkBuilder<RowData> builder = ElasticsearchSink.builder();
+        final ElasticsearchSinkBuilder<RowData> builder = new ElasticsearchSinkBuilder<>();
         builder.setEmitter(rowElasticsearchEmitter);
         builder.setHosts(config.getHosts().toArray(new HttpHost[0]));
         builder.setDeliveryGuarantee(config.getDeliveryGuarantee());
         builder.setBulkFlushMaxActions(config.getBulkFlushMaxActions());
-        builder.setBulkFlushMaxSizeMb((int) (config.getBulkFlushMaxByteSize() >> 20));
+        builder.setBulkFlushMaxSizeMb((int) (config.getBulkFlushMaxByteSize().getBytes() >> 20));
         builder.setBulkFlushInterval(config.getBulkFlushInterval());
 
         if (config.getBulkFlushBackoffType().isPresent()) {
@@ -114,6 +84,7 @@ final class Elasticsearch7DynamicSink implements DynamicTableSink {
         if (config.getPassword().isPresent()
                 && !StringUtils.isNullOrWhitespaceOnly(config.getPassword().get())) {
             builder.setConnectionPassword(config.getPassword().get());
+            builder.setConnectionUsername(config.getUsername().get());
         }
 
         if (config.getPathPrefix().isPresent()
@@ -149,10 +120,5 @@ final class Elasticsearch7DynamicSink implements DynamicTableSink {
                 && Objects.equals(
                         primaryKeyLogicalTypesWithIndex, that.primaryKeyLogicalTypesWithIndex)
                 && Objects.equals(config, that.config);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(format, physicalRowDataType, primaryKeyLogicalTypesWithIndex, config);
     }
 }
