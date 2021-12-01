@@ -24,6 +24,7 @@ import org.apache.flink.api.connector.sink.GlobalCommitter;
 import org.apache.flink.api.connector.sink.Sink;
 import org.apache.flink.api.connector.sink.SinkWriter;
 import org.apache.flink.connector.base.DeliveryGuarantee;
+import org.apache.flink.connector.elasticsearch.common.NetworkClientConfig;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
 
 import org.apache.http.HttpHost;
