@@ -20,22 +20,14 @@ package org.apache.flink.connector.elasticsearch.table;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.connector.elasticsearch.sink.Elasticsearch7SinkBuilder;
-import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.factories.DynamicTableSinkFactory;
-import org.apache.flink.table.factories.DynamicTableSourceFactory;
 
 /** A {@link DynamicTableSinkFactory} for discovering {@link ElasticsearchDynamicSink}. */
 @Internal
-public class Elasticsearch7DynamicSinkFactory extends ElasticsearchDynamicSinkFactoryBase
-        implements DynamicTableSourceFactory {
+public class Elasticsearch7DynamicSinkFactory extends ElasticsearchDynamicSinkFactoryBase {
     private static final String FACTORY_IDENTIFIER = "elasticsearch-7";
 
     public Elasticsearch7DynamicSinkFactory() {
         super(FACTORY_IDENTIFIER, Elasticsearch7SinkBuilder::new);
-    }
-
-    @Override
-    public DynamicTableSource createDynamicTableSource(Context context) {
-        return null;
     }
 }

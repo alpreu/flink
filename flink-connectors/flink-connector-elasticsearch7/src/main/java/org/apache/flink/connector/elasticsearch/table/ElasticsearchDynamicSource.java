@@ -25,7 +25,6 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.connector.source.Boundedness;
 import org.apache.flink.connector.elasticsearch.source.ElasticsearchSource;
 import org.apache.flink.connector.elasticsearch.source.ElasticsearchSourceBuilder;
-import org.apache.flink.connector.elasticsearch.source.ElasticsearchSourceConfiguration;
 import org.apache.flink.connector.elasticsearch.source.reader.ElasticsearchSearchHitDeserializationSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -58,14 +57,14 @@ public class ElasticsearchDynamicSource implements ScanTableSource {
     /** Scan format for decoding records from Elasticsearch. */
     private final DecodingFormat<DeserializationSchema<RowData>> decodingFormat;
 
-    private final ElasticsearchSourceConfiguration sourceConfig;
+    private final ElasticsearchSourceConfig sourceConfig;
 
     private final String tableIdentifier;
 
     public ElasticsearchDynamicSource(
             DataType physicalDataType,
             DecodingFormat<DeserializationSchema<RowData>> decodingFormat,
-            ElasticsearchSourceConfiguration sourceConfig,
+            ElasticsearchSourceConfig sourceConfig,
             String tableIdentifier) {
         this(physicalDataType, physicalDataType, decodingFormat, sourceConfig, tableIdentifier);
     }
@@ -74,7 +73,7 @@ public class ElasticsearchDynamicSource implements ScanTableSource {
             DataType physicalDataType,
             DataType producedDataType,
             DecodingFormat<DeserializationSchema<RowData>> decodingFormat,
-            ElasticsearchSourceConfiguration sourceConfig,
+            ElasticsearchSourceConfig sourceConfig,
             String tableIdentifier) {
         this.physicalDataType = checkNotNull(physicalDataType);
         this.producedDataType = checkNotNull(producedDataType);
