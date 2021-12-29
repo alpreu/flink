@@ -51,7 +51,7 @@ public class DynamicElasticsearchDeserializationSchema
 
     @Override
     public void deserialize(SearchHit record, Collector<RowData> out) throws IOException {
-        return; // TODO
+        deserializationSchema.deserialize(record.getSourceRef().array());
     }
 
     public TypeInformation<RowData> getProducedType() {
