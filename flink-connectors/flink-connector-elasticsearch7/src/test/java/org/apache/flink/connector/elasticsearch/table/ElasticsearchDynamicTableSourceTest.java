@@ -16,11 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.flink.connector.elasticsearch.source;
+package org.apache.flink.connector.elasticsearch.table;
 
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
-import org.apache.flink.connector.elasticsearch.table.Elasticsearch7DynamicSourceFactory;
-import org.apache.flink.connector.elasticsearch.table.ElasticsearchSourceOptions;
 import org.apache.flink.connectors.test.common.junit.extensions.TestLoggerExtension;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
