@@ -21,55 +21,108 @@ package org.apache.flink.connector.elasticsearch.table;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.connector.elasticsearch.source.reader.ElasticsearchSearchHitDeserializationSchema;
+import org.apache.flink.formats.common.TimestampFormat;
+import org.apache.flink.formats.json.JsonToRowDataConverters;
 import org.apache.flink.table.data.RowData;
+import org.apache.flink.table.types.logical.DecimalType;
+import org.apache.flink.table.types.logical.RowType;
+import org.apache.flink.table.types.logical.utils.LogicalTypeChecks;
 import org.apache.flink.util.Collector;
+
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.json.JsonReadFeature;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.DeserializationFeature;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JsonNode;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /** TODO. */
 public class DynamicElasticsearchDeserializationSchema
         implements ElasticsearchSearchHitDeserializationSchema<RowData> {
 
-    private final DeserializationSchema<RowData> deserializationSchema;
-
+    /** TypeInformation of the produced {@link RowData}. */
     private final TypeInformation<RowData> producedTypeInformation;
 
+    /** Flag indicating whether to fail if a field is missing. */
+    private final boolean failOnMissingField;
+
+    /** Flag indicating whether to ignore invalid fields/rows (default: throw an exception). */
+    private final boolean ignoreParseErrors;
+
+    /** Timestamp format specification which is used to parse timestamp. */
+    private final TimestampFormat timestampFormat;
+
+    /**
+     * Runtime converter that converts {@link JsonNode}s into objects of Flink SQL internal data
+     * structures.
+     */
+    private final JsonToRowDataConverters.JsonToRowDataConverter runtimeConverter;
+
+    /** Object mapper for parsing the JSON. */
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     DynamicElasticsearchDeserializationSchema(
-            DeserializationSchema<RowData> deserializationSchema,
-            TypeInformation<RowData> producedTypeInformation) {
-        this.deserializationSchema = deserializationSchema;
+            RowType rowType,
+            TypeInformation<RowData> producedTypeInformation,
+            boolean failOnMissingField,
+            boolean ignoreParseErrors,
+            TimestampFormat timestampFormat) {
         this.producedTypeInformation = producedTypeInformation;
+        this.failOnMissingField = failOnMissingField;
+        this.ignoreParseErrors = ignoreParseErrors;
+        this.timestampFormat = timestampFormat;
+
+        if (ignoreParseErrors && failOnMissingField) {
+            throw new IllegalArgumentException(
+                    "JSON format doesn't support failOnMissingField and ignoreParseErrors are both enabled.");
+        }
+
+        this.runtimeConverter =
+                new JsonToRowDataConverters(failOnMissingField, ignoreParseErrors, timestampFormat)
+                        .createConverter(rowType);
+
+        boolean hasDecimalType =
+                LogicalTypeChecks.hasNested(rowType, t -> t instanceof DecimalType);
+        if (hasDecimalType) {
+            objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+        }
+        objectMapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
     }
 
     @Override
     public void open(DeserializationSchema.InitializationContext context) throws Exception {
-        deserializationSchema.open(context);
+        // do nothing here
     }
 
     @Override
     public void deserialize(SearchHit record, Collector<RowData> out) throws IOException {
-        deserializationSchema.deserialize(record.getSourceRef().array());
+        if (record == null) {
+            out.collect(null);
+            return;
+        }
+        try {
+            out.collect(convertToRowData(deserializeToJsonNode(record)));
+        } catch (Throwable t) {
+            if (ignoreParseErrors) {
+                out.collect(null);
+                return;
+            }
+            throw new IOException(
+                    String.format("Failed to deserialize JSON for SearchHit '%s'.", record));
+        }
     }
 
     public TypeInformation<RowData> getProducedType() {
         return producedTypeInformation;
     }
 
-    // -----------------------------------------------
+    private JsonNode deserializeToJsonNode(SearchHit searchHit) throws IOException {
+        return objectMapper.readTree(searchHit.getSourceAsString());
+    }
 
-    private static final class OutputCollector implements Collector<RowData>, Serializable {
-
-        @Override
-        public void collect(RowData physicalValueRow) {
-            // TODO
-        }
-
-        @Override
-        public void close() {
-            // ??
-        }
+    private RowData convertToRowData(JsonNode document) {
+        return (RowData) runtimeConverter.convert(document);
     }
 }

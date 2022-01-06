@@ -20,25 +20,23 @@ package org.apache.flink.connector.elasticsearch.table;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.connector.source.Boundedness;
 import org.apache.flink.connector.elasticsearch.source.ElasticsearchSource;
 import org.apache.flink.connector.elasticsearch.source.ElasticsearchSourceBuilder;
 import org.apache.flink.connector.elasticsearch.source.reader.ElasticsearchSearchHitDeserializationSchema;
+import org.apache.flink.formats.common.TimestampFormat;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.connector.ChangelogMode;
-import org.apache.flink.table.connector.format.DecodingFormat;
 import org.apache.flink.table.connector.source.DataStreamScanProvider;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.ScanTableSource;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.types.logical.RowType;
 
 import org.apache.http.HttpHost;
-
-import javax.annotation.Nullable;
 
 import java.util.Objects;
 
@@ -51,53 +49,51 @@ public class ElasticsearchDynamicSource implements ScanTableSource {
     /** Data type that describes the final output of the source. */
     private final DataType producedDataType;
 
-    /** Data type to configure the format. */
-    private final DataType physicalDataType;
-
-    /** Scan format for decoding records from Elasticsearch. */
-    private final DecodingFormat<DeserializationSchema<RowData>> decodingFormat;
-
     private final ElasticsearchSourceConfig sourceConfig;
 
     private final String tableIdentifier;
 
-    public ElasticsearchDynamicSource(
-            DataType physicalDataType,
-            DecodingFormat<DeserializationSchema<RowData>> decodingFormat,
-            ElasticsearchSourceConfig sourceConfig,
-            String tableIdentifier) {
-        this(physicalDataType, physicalDataType, decodingFormat, sourceConfig, tableIdentifier);
-    }
+    private final boolean failOnMissingFields;
+
+    private final boolean ignoreParseErrors;
+
+    private final TimestampFormat timestampFormat;
 
     public ElasticsearchDynamicSource(
-            DataType physicalDataType,
             DataType producedDataType,
-            DecodingFormat<DeserializationSchema<RowData>> decodingFormat,
             ElasticsearchSourceConfig sourceConfig,
-            String tableIdentifier) {
-        this.physicalDataType = checkNotNull(physicalDataType);
+            String tableIdentifier,
+            boolean failOnMissingFields,
+            boolean ignoreParseErrors,
+            TimestampFormat timestampFormat) {
         this.producedDataType = checkNotNull(producedDataType);
-        this.decodingFormat = checkNotNull(decodingFormat);
         this.sourceConfig = checkNotNull(sourceConfig);
         this.tableIdentifier = checkNotNull(tableIdentifier);
+        this.failOnMissingFields = failOnMissingFields;
+        this.ignoreParseErrors = ignoreParseErrors;
+        this.timestampFormat = checkNotNull(timestampFormat);
     }
 
     @Override
     public ChangelogMode getChangelogMode() {
-        return decodingFormat.getChangelogMode();
+        return ChangelogMode.insertOnly();
     }
 
     @Override
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext context) {
-
-        final DeserializationSchema<RowData> deserialization =
-                createDeserialization(context, decodingFormat);
-
         final TypeInformation<RowData> producedTypeInformation =
                 context.createTypeInformation(producedDataType);
 
+        final ElasticsearchSearchHitDeserializationSchema<RowData> elasticsearchDeserializer =
+                new DynamicElasticsearchDeserializationSchema(
+                        (RowType) producedDataType.getLogicalType(),
+                        producedTypeInformation,
+                        failOnMissingFields,
+                        ignoreParseErrors,
+                        timestampFormat);
+
         final ElasticsearchSource<RowData> elasticsearchSource =
-                createElasticsearchSource(deserialization, producedTypeInformation);
+                createElasticsearchSource(elasticsearchDeserializer);
 
         return new DataStreamScanProvider() {
             @Override
@@ -116,11 +112,7 @@ public class ElasticsearchDynamicSource implements ScanTableSource {
     }
 
     ElasticsearchSource<RowData> createElasticsearchSource(
-            DeserializationSchema<RowData> deserializationSchema,
-            TypeInformation<RowData> producedTypeInformation) {
-        final ElasticsearchSearchHitDeserializationSchema<RowData> elasticsearchDeserializer =
-                createElasticsearchDeserializationSchema(
-                        deserializationSchema, producedTypeInformation);
+            ElasticsearchSearchHitDeserializationSchema<RowData> elasticsearchDeserializer) {
 
         final ElasticsearchSourceBuilder<RowData> builder = ElasticsearchSource.builder();
 
@@ -134,28 +126,15 @@ public class ElasticsearchDynamicSource implements ScanTableSource {
         return builder.build();
     }
 
-    private ElasticsearchSearchHitDeserializationSchema<RowData>
-            createElasticsearchDeserializationSchema(
-                    DeserializationSchema<RowData> deserializationSchema,
-                    TypeInformation<RowData> producedTypeInformation) {
-        return new DynamicElasticsearchDeserializationSchema(
-                deserializationSchema, producedTypeInformation);
-    }
-
-    private @Nullable DeserializationSchema<RowData> createDeserialization(
-            DynamicTableSource.Context context,
-            @Nullable DecodingFormat<DeserializationSchema<RowData>> format) {
-        if (format == null) {
-            return null;
-        }
-
-        return format.createRuntimeDecoder(context, physicalDataType);
-    }
-
     @Override
     public DynamicTableSource copy() {
         return new ElasticsearchDynamicSource(
-                physicalDataType, producedDataType, decodingFormat, sourceConfig, tableIdentifier);
+                producedDataType,
+                sourceConfig,
+                tableIdentifier,
+                failOnMissingFields,
+                ignoreParseErrors,
+                timestampFormat);
     }
 
     @Override
@@ -172,16 +151,22 @@ public class ElasticsearchDynamicSource implements ScanTableSource {
             return false;
         }
         ElasticsearchDynamicSource that = (ElasticsearchDynamicSource) o;
-        return Objects.equals(producedDataType, that.producedDataType)
-                && Objects.equals(physicalDataType, that.physicalDataType)
-                && Objects.equals(decodingFormat, that.decodingFormat)
+        return failOnMissingFields == that.failOnMissingFields
+                && ignoreParseErrors == that.ignoreParseErrors
+                && Objects.equals(producedDataType, that.producedDataType)
                 && Objects.equals(sourceConfig, that.sourceConfig)
-                && Objects.equals(tableIdentifier, that.tableIdentifier);
+                && Objects.equals(tableIdentifier, that.tableIdentifier)
+                && timestampFormat == that.timestampFormat;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                producedDataType, physicalDataType, decodingFormat, sourceConfig, tableIdentifier);
+                producedDataType,
+                sourceConfig,
+                tableIdentifier,
+                failOnMissingFields,
+                ignoreParseErrors,
+                timestampFormat);
     }
 }

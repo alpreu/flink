@@ -24,6 +24,8 @@ import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
+import org.apache.flink.formats.common.TimestampFormat;
+import org.apache.flink.formats.json.JsonFormatOptionsUtil;
 import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.table.connector.format.DecodingFormat;
 import org.apache.flink.table.connector.source.DynamicTableSource;
@@ -40,9 +42,11 @@ import java.util.stream.Stream;
 
 import static org.apache.flink.connector.elasticsearch.table.ElasticsearchSourceOptions.HOSTS_OPTION;
 import static org.apache.flink.connector.elasticsearch.table.ElasticsearchSourceOptions.INDEX_OPTION;
+import static org.apache.flink.formats.json.JsonFormatOptions.FAIL_ON_MISSING_FIELD;
+import static org.apache.flink.formats.json.JsonFormatOptions.IGNORE_PARSE_ERRORS;
 
+/** Factory for creating a {@link ElasticsearchDynamicSource}. */
 @Internal
-/** TODO. */
 public class Elasticsearch7DynamicSourceFactory implements DynamicTableSourceFactory {
     public static final String FACTORY_IDENTIFIER = "elasticsearch-7-src";
 
@@ -53,8 +57,8 @@ public class Elasticsearch7DynamicSourceFactory implements DynamicTableSourceFac
 
         final ReadableConfig tableOptions = helper.getOptions();
 
-        final DecodingFormat<DeserializationSchema<RowData>> decodingFormat =
-                getDecodingFormat(helper);
+        //        final DecodingFormat<DeserializationSchema<RowData>> decodingFormat =
+        //                getDecodingFormat(helper);
 
         helper.validate(); // TODO: check if we have any properties that should not be validated
 
@@ -66,22 +70,35 @@ public class Elasticsearch7DynamicSourceFactory implements DynamicTableSourceFac
                 new ElasticsearchSourceConfig(
                         Configuration.fromMap(context.getCatalogTable().getOptions()));
 
+        final boolean failOnMissingFields = tableOptions.get(FAIL_ON_MISSING_FIELD);
+        final boolean ignoreParseErrors = tableOptions.get(IGNORE_PARSE_ERRORS);
+        TimestampFormat timestampFormat = JsonFormatOptionsUtil.getTimestampFormat(tableOptions);
+
         return createElasticsearchTableSource(
                 physicalRowDataType,
-                decodingFormat,
                 sourceConfig,
-                context.getObjectIdentifier().asSummaryString());
+                context.getObjectIdentifier().asSummaryString(),
+                failOnMissingFields,
+                ignoreParseErrors,
+                timestampFormat);
     }
 
     @VisibleForTesting
     protected DynamicTableSource createElasticsearchTableSource(
             DataType physicalRowDataType,
-            DecodingFormat<DeserializationSchema<RowData>> decodingFormat,
             ElasticsearchSourceConfig config,
-            String tableIdentifier) {
+            String tableIdentifier,
+            boolean failOnMissingFields,
+            boolean ignoreParseErrors,
+            TimestampFormat timestampFormat) {
 
         return new ElasticsearchDynamicSource(
-                physicalRowDataType, decodingFormat, config, tableIdentifier);
+                physicalRowDataType,
+                config,
+                tableIdentifier,
+                failOnMissingFields,
+                ignoreParseErrors,
+                timestampFormat);
     }
 
     @Override

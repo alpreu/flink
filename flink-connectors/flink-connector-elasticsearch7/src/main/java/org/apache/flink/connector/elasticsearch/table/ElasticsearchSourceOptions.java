@@ -45,7 +45,7 @@ public class ElasticsearchSourceOptions {
     public static final ConfigOption<Integer> NUMBER_OF_SLICES_OPTION =
             ConfigOptions.key("num-slices")
                     .intType()
-                    .defaultValue(1)
+                    .defaultValue(3)
                     .withDescription("Number of search slices.");
 
     public static final ConfigOption<Duration> PIT_KEEP_ALIVE_OPTION =
@@ -53,6 +53,30 @@ public class ElasticsearchSourceOptions {
                     .durationType()
                     .defaultValue(Duration.ofMinutes(5))
                     .withDescription("Keep-alive duration for Elasticsearch PIT");
+
+    public static final ConfigOption<Boolean> FAIL_ON_MISSING_FIELDS =
+            ConfigOptions.key("fail-on-missing-fields")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription(
+                            "Optional flag to specify whether to fail if a field is missing or not, false by default.");
+
+    public static final ConfigOption<Boolean> IGNORE_PARSE_ERRORS =
+            ConfigOptions.key("ignore-parse-errors")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription(
+                            "Optional flag to skip fields and rows with parse errors instead of failing;\n"
+                                    + "fields are set to null in case of errors, false by default.");
+
+    public static final ConfigOption<String> TIMESTAMP_FORMAT =
+            ConfigOptions.key("timestamp-format.standard")
+                    .stringType()
+                    .defaultValue("SQL")
+                    .withDescription(
+                            "Optional flag to specify timestamp format, SQL by default."
+                                    + " Option ISO-8601 will parse input timestamp in \"yyyy-MM-ddTHH:mm:ss.s{precision}\" format and output timestamp in the same format."
+                                    + " Option SQL will parse input timestamp in \"yyyy-MM-dd HH:mm:ss.s{precision}\" format and output timestamp in the same format.");
 
     public static final ConfigOption<String> PASSWORD_OPTION =
             ConfigOptions.key("password")
