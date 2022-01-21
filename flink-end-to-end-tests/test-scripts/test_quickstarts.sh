@@ -41,7 +41,7 @@ mkdir -p "${TEST_DATA_DIR}"
 cd "${TEST_DATA_DIR}"
 
 ARTIFACT_ID=flink-quickstart-${TEST_TYPE}
-ARTIFACT_VERSION=0.1
+ARTIFACT_VERSION=${FLINK_VERSION}
 
 run_mvn archetype:generate                                   \
     -DarchetypeGroupId=org.apache.flink                  \
