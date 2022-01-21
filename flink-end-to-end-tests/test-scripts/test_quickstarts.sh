@@ -80,7 +80,7 @@ esac
 run_mvn clean package
 
 cd target
-jar tvf flink-quickstart-${TEST_TYPE}-0.1.jar > contentsInJar.txt
+jar tvf flink-quickstart-${TEST_TYPE}-${ARTIFACT_VERSION}.jar > contentsInJar.txt
 
 if [[ `grep -c "org/apache/flink/api/java" contentsInJar.txt` -eq '0' && \
       `grep -c "org/apache/flink/streaming/api" contentsInJar.txt` -eq '0' && \
