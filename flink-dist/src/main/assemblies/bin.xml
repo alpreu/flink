@@ -109,6 +109,13 @@ under the License.
 
 		<!-- Built-in connectors and formats -->
 		<file>
+			<source>../flink-connectors/flink-connector-base/target/flink-connector-base-${project.version}.jar</source>
+			<outputDirectory>lib/</outputDirectory>
+			<destName>flink-connector-base-${project.version}.jar</destName>
+			<fileMode>0644</fileMode>
+		</file>
+
+		<file>
 			<source>../flink-connectors/flink-connector-files/target/flink-connector-files-${project.version}.jar</source>
 			<outputDirectory>lib/</outputDirectory>
 			<destName>flink-connector-files-${project.version}.jar</destName>
