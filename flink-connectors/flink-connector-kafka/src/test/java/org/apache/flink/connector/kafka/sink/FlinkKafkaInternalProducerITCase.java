@@ -66,6 +66,208 @@ class FlinkKafkaInternalProducerITCase {
     private static final String TRANSACTION_PREFIX = "test-transaction-";
 
     @Test
+    void testLateArrivalOfLowerTransactionId() {
+        final String topic = "test-late-arrival-lower-transaction-id";
+        final int lateArrivalId = 2;
+
+        try (FlinkKafkaInternalProducer<String, String> producer =
+                new FlinkKafkaInternalProducer<>(getProperties(), "dummy")) {
+            for (int i = 1; i <= lateArrivalId + 10; i++) {
+                producer.initTransactionId(TRANSACTION_PREFIX + i);
+                producer.beginTransaction();
+                producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + i));
+                producer.commitTransaction();
+            }
+
+            producer.initTransactionId(TRANSACTION_PREFIX + lateArrivalId);
+            producer.beginTransaction();
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + lateArrivalId));
+            producer.commitTransaction();
+        }
+    }
+
+    @Test
+    void testLateArrivalOfHigherTransactionId() {
+        final String topic = "test-late-arrival-higher-transaction-id";
+        final int lateArrivalId = 20;
+
+        try (FlinkKafkaInternalProducer<String, String> producer =
+                new FlinkKafkaInternalProducer<>(getProperties(), "dummy")) {
+            for (int i = 1; i <= lateArrivalId - 10; i++) {
+                producer.initTransactionId(TRANSACTION_PREFIX + i);
+                producer.beginTransaction();
+                producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + i));
+                producer.commitTransaction();
+            }
+
+            producer.initTransactionId(TRANSACTION_PREFIX + lateArrivalId);
+            producer.beginTransaction();
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 4));
+            producer.commitTransaction();
+        }
+    }
+
+    @Test
+    void testInterleavedProducers() {
+        final String topic = "test-interleaved-producers";
+
+        try (FlinkKafkaInternalProducer<String, String> producer =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy");
+                FlinkKafkaInternalProducer<String, String> other =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy2")) {
+
+            producer.initTransactionId(TRANSACTION_PREFIX + 1);
+            producer.beginTransaction();
+
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 1));
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 2));
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 3));
+            producer.commitTransaction();
+            producer.flush();
+
+            producer.beginTransaction();
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value" + 5));
+            producer.flush();
+
+            other.initTransactionId(TRANSACTION_PREFIX + 20);
+            other.beginTransaction();
+            other.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 4));
+
+            other.flush();
+            other.commitTransaction();
+            other.flush();
+
+            producer.flush();
+            producer.commitTransaction();
+            producer.flush();
+        }
+    }
+
+    @Test
+    void testInterleavedProducersFlushLast() {
+        final String topic = "test-interleaved-producers-flush-last";
+
+        try (FlinkKafkaInternalProducer<String, String> producer =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy");
+                FlinkKafkaInternalProducer<String, String> other =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy2")) {
+
+            producer.initTransactionId(TRANSACTION_PREFIX + 1);
+            producer.beginTransaction();
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 1));
+
+            other.initTransactionId(TRANSACTION_PREFIX + 20);
+            other.beginTransaction();
+            other.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 4));
+
+            other.flush();
+            other.commitTransaction();
+            other.flush();
+
+            producer.flush();
+            producer.commitTransaction();
+            producer.flush();
+        }
+    }
+
+    @Test
+    void testInterleavedProducersCommitLast() {
+        final String topic = "test-interleaved-producers-commit-last";
+
+        try (FlinkKafkaInternalProducer<String, String> producer =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy");
+                FlinkKafkaInternalProducer<String, String> other =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy2")) {
+
+            producer.initTransactionId(TRANSACTION_PREFIX + 1);
+            producer.beginTransaction();
+
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 1));
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 2));
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 3));
+
+            producer.flush();
+
+            other.initTransactionId(TRANSACTION_PREFIX + 20);
+            other.beginTransaction();
+            other.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 4));
+
+            other.flush();
+            other.commitTransaction();
+
+            producer.commitTransaction();
+        }
+    }
+
+    @Test
+    void testInterleavedProducersCommitWithoutFlush() {
+        final String topic = "test-interleaved-producers-commit-without-flush";
+
+        try (FlinkKafkaInternalProducer<String, String> producer =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy");
+                FlinkKafkaInternalProducer<String, String> other =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy2")) {
+
+            producer.initTransactionId(TRANSACTION_PREFIX + 1);
+            producer.beginTransaction();
+
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 1));
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 2));
+            producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 3));
+
+            producer.commitTransaction();
+
+            other.initTransactionId(TRANSACTION_PREFIX + 20);
+            other.beginTransaction();
+            other.send(new ProducerRecord<>(topic, 0, null, "test-value-" + 4));
+
+            other.commitTransaction();
+
+            producer.flush();
+            other.flush();
+        }
+    }
+
+    @Test
+    void testSequentialTransactions() {
+        final String topic = "test-sequential-transactions";
+
+        try (FlinkKafkaInternalProducer<String, String> producer =
+                new FlinkKafkaInternalProducer<>(getProperties(), "dummy")) {
+            for (int i = 1; i <= 10; i++) {
+                producer.initTransactionId(TRANSACTION_PREFIX + i);
+                producer.beginTransaction();
+                producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + i));
+                producer.commitTransaction();
+                producer.beginTransaction();
+                producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + i));
+                producer.commitTransaction();
+            }
+        }
+    }
+
+    @Test
+    void testTwoProducers() {
+        final String topic = "test-two-producers";
+
+        try (FlinkKafkaInternalProducer<String, String> producer =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy");
+                FlinkKafkaInternalProducer<String, String> other =
+                        new FlinkKafkaInternalProducer<>(getProperties(), "dummy2")) {
+            for (int i = 1; i <= 10; i++) {
+                producer.initTransactionId(TRANSACTION_PREFIX + i);
+                other.initTransactionId(TRANSACTION_PREFIX + i + 20);
+                producer.beginTransaction();
+                other.beginTransaction();
+                producer.send(new ProducerRecord<>(topic, 0, null, "test-value-" + i));
+                other.send(new ProducerRecord<>(topic, 0, null, "test-value-" + i));
+                producer.commitTransaction();
+                other.commitTransaction();
+            }
+        }
+    }
+
+    @Test
     void testInitTransactionId() {
         final String topic = "test-init-transactions";
         try (FlinkKafkaInternalProducer<String, String> reuse =
